@@ -1,17 +1,5 @@
-/* =========================================================
-   admin.h
-   No include guard: include ONCE, and only AFTER file.h.
-   ========================================================= */
-
-
-/* =========================================================
-   DASHBOARD
-   ========================================================= */
-
 void dashboard() {
-
     FILE *parkFile = fopen(PARK_FILE, "r");
-
     if (parkFile == NULL) {
         printf("No car parks available.\n");
         return;
@@ -19,7 +7,7 @@ void dashboard() {
 
     char name[MAX_NAME];
     char location[MAX_LOCATION];
-    int  capacity;
+    int capacity;
 
     int totalSlots = 0;
     int totalAvailable = 0;
@@ -31,31 +19,32 @@ void dashboard() {
     printf("                             DASHBOARD\n");
     printf("======================================================================\n");
 
-    while (fscanf(parkFile, "%99s %99s %d",
-                  name, location, &capacity) == 3) {
-
+    while (fscanf(parkFile, "%99s %99s %d", name, location, &capacity) == 3) {
         Slot slots[MAX_SLOTS];
-
         int count = loadSlots(name, slots, MAX_SLOTS);
 
         int available = 0;
-        int repair    = 0;
-        int people    = 0;
+        int repair = 0;
+        int people = 0;
 
+        // We count the slots of this car park one by one.
         for (int i = 0; i < count; i++) {
-
-            if (slots[i].status == AVAILABLE)      available++;
-            else if (slots[i].status == REPAIR)    repair++;
-            else                                   people += slots[i].people;
+            if (slots[i].status == AVAILABLE) {
+                available++;
+            } else if (slots[i].status == REPAIR) {
+                repair++;
+            } else {
+                people = people + slots[i].people;
+            }
         }
 
         printf("%-12s | %-12s | Total:%4d | Free:%4d | Repair:%4d | People:%4d\n",
                name, location, count, available, repair, people);
 
-        totalSlots     += count;
-        totalAvailable += available;
-        totalRepair    += repair;
-        totalPeople    += people;
+        totalSlots = totalSlots + count;
+        totalAvailable = totalAvailable + available;
+        totalRepair = totalRepair + repair;
+        totalPeople = totalPeople + people;
     }
 
     fclose(parkFile);
@@ -69,19 +58,15 @@ void dashboard() {
     printf("======================================================================\n");
 }
 
-
-/* =========================================================
-   CAR PARK DETAILS
-   ========================================================= */
-
 void viewCarparkDetails() {
-
     char name[MAX_NAME];
     char location[MAX_LOCATION];
-    int  capacity;
+    int capacity;
 
     printf("\nCar park name: ");
-    if (scanf("%99s", name) != 1) return;
+    if (scanf("%99s", name) != 1) {
+        return;
+    }
     flushInput();
 
     if (!findCarpark(name, location, &capacity)) {
@@ -90,7 +75,6 @@ void viewCarparkDetails() {
     }
 
     Slot slots[MAX_SLOTS];
-
     int count = loadSlots(name, slots, MAX_SLOTS);
 
     printf("\n");
@@ -99,27 +83,21 @@ void viewCarparkDetails() {
     printf("=============================================\n");
 
     int totalPeople = 0;
-    int available   = 0;
-    int repair      = 0;
+    int available = 0;
+    int repair = 0;
 
     for (int i = 0; i < count; i++) {
-
         if (slots[i].status == OCCUPIED) {
-
             printf("Slot %3d : OCCUPIED  | Plate: %-15s | People: %d\n",
                    slots[i].number, slots[i].plate, slots[i].people);
 
-            totalPeople += slots[i].people;
-        }
-        else if (slots[i].status == REPAIR) {
-
+            totalPeople = totalPeople + slots[i].people;
+        } else if (slots[i].status == REPAIR) {
             printf("Slot %3d : REPAIR    | under maintenance\n",
                    slots[i].number);
 
             repair++;
-        }
-        else {
-
+        } else {
             printf("Slot %3d : AVAILABLE\n", slots[i].number);
 
             available++;
@@ -135,22 +113,18 @@ void viewCarparkDetails() {
     printf("=============================================\n");
 }
 
-
-/* =========================================================
-   FORCE EDIT SINGLE SLOT
-   ========================================================= */
-
+// The admin can change one slot even if the user did not ask.
 void forceEditSlot() {
-
     char name[MAX_NAME];
-    int  slotNumber;
+    int slotNumber;
 
     printf("\nCar park name: ");
-    if (scanf("%99s", name) != 1) return;
+    if (scanf("%99s", name) != 1) {
+        return;
+    }
     flushInput();
 
     Slot slots[MAX_SLOTS];
-
     int count = loadSlots(name, slots, MAX_SLOTS);
 
     if (count == 0) {
@@ -165,7 +139,6 @@ void forceEditSlot() {
     }
 
     Slot *slot = &slots[slotNumber - 1];
-
     int choice;
 
     printf("\nCurrent status: %s\n", statusText(slot->status));
@@ -180,20 +153,19 @@ void forceEditSlot() {
     }
 
     if (choice == 1) {
-
-        slot->status   = AVAILABLE;
+        slot->status = AVAILABLE;
         slot->plate[0] = '\0';
-        slot->people   = 0;
+        slot->people = 0;
 
         printf("Slot set to AVAILABLE.\n");
-    }
-    else if (choice == 2) {
-
+    } else if (choice == 2) {
         char plate[MAX_PLATE];
-        int  people;
+        int people;
 
         printf("License plate: ");
-        if (scanf("%49s", plate) != 1) return;
+        if (scanf("%49s", plate) != 1) {
+            return;
+        }
         flushInput();
 
         printf("Number of people: ");
@@ -207,17 +179,13 @@ void forceEditSlot() {
         slot->people = people;
 
         printf("Slot set to OCCUPIED.\n");
-    }
-    else if (choice == 3) {
-
-        slot->status   = REPAIR;
+    } else if (choice == 3) {
+        slot->status = REPAIR;
         slot->plate[0] = '\0';
-        slot->people   = 0;
+        slot->people = 0;
 
         printf("Slot set to REPAIR.\n");
-    }
-    else {
-
+    } else {
         printf("Invalid choice.\n");
         return;
     }
@@ -225,21 +193,16 @@ void forceEditSlot() {
     saveSlots(name, slots, count);
 }
 
-
-/* =========================================================
-   SET ENTIRE CAR PARK AVAILABLE
-   ========================================================= */
-
 void setCarparkAvailable() {
-
     char name[MAX_NAME];
 
     printf("\nCar park name: ");
-    if (scanf("%99s", name) != 1) return;
+    if (scanf("%99s", name) != 1) {
+        return;
+    }
     flushInput();
 
     Slot slots[MAX_SLOTS];
-
     int count = loadSlots(name, slots, MAX_SLOTS);
 
     if (count == 0) {
@@ -247,35 +210,28 @@ void setCarparkAvailable() {
         return;
     }
 
+    // Everything becomes empty, like at the start of the event.
     for (int i = 0; i < count; i++) {
-
-        slots[i].status   = AVAILABLE;
+        slots[i].status = AVAILABLE;
         slots[i].plate[0] = '\0';
-        slots[i].people   = 0;
+        slots[i].people = 0;
     }
 
     saveSlots(name, slots, count);
-
     printf("All slots are now AVAILABLE.\n");
 }
 
-
-/* =========================================================
-   REPAIR MANAGEMENT
-   A slot marked REPAIR is blocked: reserveParking() will
-   never hand it out, so no car can park on it.
-   ========================================================= */
-
+// A slot with the status REPAIR is broken, so nobody can park there.
 void repairCarpark() {
-
     char name[MAX_NAME];
 
     printf("\nCar park name: ");
-    if (scanf("%99s", name) != 1) return;
+    if (scanf("%99s", name) != 1) {
+        return;
+    }
     flushInput();
 
     Slot slots[MAX_SLOTS];
-
     int count = loadSlots(name, slots, MAX_SLOTS);
 
     if (count == 0) {
@@ -298,13 +254,10 @@ void repairCarpark() {
     }
 
     if (choice == 1 || choice == 3) {
-
         int slotNumber;
 
         printf("Slot number: ");
-        if (!readInt(&slotNumber) ||
-            slotNumber < 1 || slotNumber > count) {
-
+        if (!readInt(&slotNumber) || slotNumber < 1 || slotNumber > count) {
             printf("Invalid slot number.\n");
             return;
         }
@@ -312,39 +265,30 @@ void repairCarpark() {
         Slot *slot = &slots[slotNumber - 1];
 
         if (choice == 1) {
-
+            // We cannot repair a slot while a car is still on it.
             if (slot->status == OCCUPIED) {
-                printf("Slot %d is occupied by %s. "
-                       "Release it first.\n",
+                printf("Slot %d is occupied by %s. Release it first.\n",
                        slot->number, slot->plate);
                 return;
             }
 
             slot->status = REPAIR;
-
             printf("Slot %d is closed for repair.\n", slot->number);
-        }
-        else {
-
+        } else {
             if (slot->status != REPAIR) {
                 printf("Slot %d is not under repair.\n", slot->number);
                 return;
             }
 
             slot->status = AVAILABLE;
-
-            printf("Slot %d is repaired and available again.\n",
-                   slot->number);
+            printf("Slot %d is repaired and available again.\n", slot->number);
         }
-    }
-    else if (choice == 2) {
-
+    } else if (choice == 2) {
+        // First we check that the whole car park is empty.
         for (int i = 0; i < count; i++) {
-
             if (slots[i].status == OCCUPIED) {
-
-                printf("Cannot close the car park: "
-                       "Slot %d is still occupied by %s.\n",
+                printf("Cannot close the car park: Slot %d is still occupied "
+                       "by %s.\n",
                        slots[i].number, slots[i].plate);
                 return;
             }
@@ -355,27 +299,21 @@ void repairCarpark() {
         }
 
         printf("All slots are now under REPAIR.\n");
-    }
-    else if (choice == 4) {
-
+    } else if (choice == 4) {
         int fixed = 0;
 
         for (int i = 0; i < count; i++) {
-
             if (slots[i].status == REPAIR) {
-
-                slots[i].status   = AVAILABLE;
+                slots[i].status = AVAILABLE;
                 slots[i].plate[0] = '\0';
-                slots[i].people   = 0;
+                slots[i].people = 0;
 
                 fixed++;
             }
         }
 
         printf("%d slot(s) repaired and available again.\n", fixed);
-    }
-    else {
-
+    } else {
         printf("Invalid choice.\n");
         return;
     }
@@ -383,17 +321,10 @@ void repairCarpark() {
     saveSlots(name, slots, count);
 }
 
-
-/* =========================================================
-   ADMIN MENU
-   ========================================================= */
-
 void adminMenu() {
-
     int choice;
 
     do {
-
         printf("\n");
         printf("========================================\n");
         printf("              ADMIN MENU\n");
@@ -416,19 +347,21 @@ void adminMenu() {
         }
 
         switch (choice) {
-
             case 1: {
-
                 char name[MAX_NAME];
                 char location[MAX_LOCATION];
-                int  capacity;
+                int capacity;
 
                 printf("Car park name: ");
-                if (scanf("%99s", name) != 1) break;
+                if (scanf("%99s", name) != 1) {
+                    break;
+                }
                 flushInput();
 
                 printf("Location: ");
-                if (scanf("%99s", location) != 1) break;
+                if (scanf("%99s", location) != 1) {
+                    break;
+                }
                 flushInput();
 
                 printf("Capacity: ");
@@ -438,24 +371,22 @@ void adminMenu() {
                 }
 
                 addCarpark(name, location, capacity);
-
                 break;
             }
 
             case 2: {
-
                 char name[MAX_NAME];
                 char newname[MAX_NAME];
                 char newlocation[MAX_LOCATION];
                 char oldLocation[MAX_LOCATION];
-
                 int oldCapacity;
                 int newcapacity;
 
-                /* The name alone identifies the car park */
-
+                // We only ask for the name because the name is the key.
                 printf("Car park name to edit: ");
-                if (scanf("%99s", name) != 1) break;
+                if (scanf("%99s", name) != 1) {
+                    break;
+                }
                 flushInput();
 
                 if (!findCarpark(name, oldLocation, &oldCapacity)) {
@@ -467,11 +398,15 @@ void adminMenu() {
                 printf("Current capacity : %d\n", oldCapacity);
 
                 printf("New name: ");
-                if (scanf("%99s", newname) != 1) break;
+                if (scanf("%99s", newname) != 1) {
+                    break;
+                }
                 flushInput();
 
                 printf("New location: ");
-                if (scanf("%99s", newlocation) != 1) break;
+                if (scanf("%99s", newlocation) != 1) {
+                    break;
+                }
                 flushInput();
 
                 printf("New capacity: ");
@@ -481,28 +416,41 @@ void adminMenu() {
                 }
 
                 editCarpark(name, newname, newlocation, newcapacity);
-
                 break;
             }
 
             case 3: {
-
                 char name[MAX_NAME];
 
                 printf("Car park name to delete: ");
-                if (scanf("%99s", name) != 1) break;
+                if (scanf("%99s", name) != 1) {
+                    break;
+                }
                 flushInput();
 
                 deleteCarpark(name);
-
                 break;
             }
 
-            case 4: dashboard();            break;
-            case 5: viewCarparkDetails();   break;
-            case 6: forceEditSlot();        break;
-            case 7: setCarparkAvailable();  break;
-            case 8: repairCarpark();        break;
+            case 4:
+                dashboard();
+                break;
+
+            case 5:
+                viewCarparkDetails();
+                break;
+
+            case 6:
+                forceEditSlot();
+                break;
+
+            case 7:
+                setCarparkAvailable();
+                break;
+
+            case 8:
+                repairCarpark();
+                break;
 
             case 9:
                 printf("Leaving admin menu...\n");
@@ -511,6 +459,5 @@ void adminMenu() {
             default:
                 printf("Invalid choice.\n");
         }
-
     } while (choice != 9);
 }
