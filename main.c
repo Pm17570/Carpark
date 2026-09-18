@@ -1,12 +1,15 @@
 #include <stdio.h>
 #include <string.h>
 
+/* The headers have no include guards, so the order matters
+   and each one may be included only once. */
+
 #include "file.h"
 #include "user.h"
 #include "admin.h"
 
 
-#define ADMIN_COMMAND "admin"
+#define ADMIN_COMMAND  "admin"
 #define ADMIN_PASSWORD "KVIS1234"
 
 
@@ -14,7 +17,9 @@ int main() {
 
     char input[100];
 
-    while (1) {
+    int running = 1;
+
+    while (running) {
 
         printf("\n");
         printf("========================================\n");
@@ -22,10 +27,18 @@ int main() {
         printf("========================================\n");
         printf("1. Reserve parking\n");
         printf("2. Exit parking\n");
+        printf("3. Close program\n");
         printf("========================================\n");
         printf("Choice: ");
 
-        scanf("%99s", input);
+        if (scanf("%99s", input) != 1) {
+
+            /* End of input (Ctrl+D / Ctrl+Z): close cleanly */
+            printf("\nClosing program...\n");
+            break;
+        }
+
+        flushInput();
 
 
         /* =========================================
@@ -42,6 +55,24 @@ int main() {
             exitParking();
         }
 
+        else if (strcmp(input, "3") == 0 ||
+                 strcmp(input, "exit") == 0 ||
+                 strcmp(input, "quit") == 0) {
+
+            char confirm[10];
+
+            printf("Close the program? (y/n): ");
+
+            if (scanf("%9s", confirm) != 1) break;
+            flushInput();
+
+            if (confirm[0] == 'y' || confirm[0] == 'Y') {
+
+                printf("Closing program. Goodbye!\n");
+                running = 0;
+            }
+        }
+
 
         /* =========================================
            Hidden Admin Command
@@ -52,7 +83,9 @@ int main() {
             char password[100];
 
             printf("Admin password: ");
-            scanf("%99s", password);
+
+            if (scanf("%99s", password) != 1) break;
+            flushInput();
 
             if (strcmp(password, ADMIN_PASSWORD) == 0) {
 
@@ -60,7 +93,6 @@ int main() {
 
                 adminMenu();
             }
-
             else {
 
                 printf("Incorrect password.\n");

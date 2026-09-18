@@ -1,7 +1,7 @@
-#ifndef USER_H
-#define USER_H
-
-#include "file.h"
+/* =========================================================
+   user.h
+   No include guard: include ONCE, and only AFTER file.h.
+   ========================================================= */
 
 
 /* =========================================================
@@ -11,100 +11,79 @@
 void reserveParking() {
 
     char plate[MAX_PLATE];
-    int people;
+    int  people;
 
     printf("\n===== Reserve Parking =====\n");
 
     printf("License plate: ");
-    scanf("%49s", plate);
+    if (scanf("%49s", plate) != 1) return;
+    flushInput();
 
     printf("Number of people: ");
-    scanf("%d", &people);
-
-    if (people <= 0) {
-
+    if (!readInt(&people) || people <= 0) {
         printf("Invalid number of people.\n");
         return;
     }
 
-    /* Check whether this plate already exists */
-
     if (plateExists(plate)) {
-
         printf("This license plate already has a parking slot.\n");
         return;
     }
 
-
-    FILE *parkFile = fopen("Park.txt", "r");
+    FILE *parkFile = fopen(PARK_FILE, "r");
 
     if (parkFile == NULL) {
-
         printf("No car parks available.\n");
         return;
     }
 
-    char filename[150];
-    char location[100];
-    int capacity;
+    char name[MAX_NAME];
+    char location[MAX_LOCATION];
+    int  capacity;
 
     int found = 0;
 
-    while (fscanf(parkFile,
-                  "%s %s %d",
-                  filename,
-                  location,
-                  &capacity) == 3) {
+    while (fscanf(parkFile, "%99s %99s %d",
+                  name, location, &capacity) == 3) {
 
         Slot slots[MAX_SLOTS];
 
-        int count =
-            loadSlots(filename,
-                      slots,
-                      MAX_SLOTS);
+        int count = loadSlots(name, slots, MAX_SLOTS);
 
         for (int i = 0; i < count; i++) {
 
-            if (!slots[i].occupied) {
+            /* REPAIR slots are skipped: nobody may park there */
 
-                /*
-                   Found an available slot
-                */
+            if (slots[i].status != AVAILABLE) continue;
 
-                slots[i].occupied = 1;
+            slots[i].status = OCCUPIED;
+            strcpy(slots[i].plate, plate);
+            slots[i].people = people;
 
-                strcpy(slots[i].plate, plate);
+            saveSlots(name, slots, count);
 
-                slots[i].people = people;
+            printf("\n");
+            printf("============================\n");
+            printf(" Parking Reserved!\n");
+            printf("============================\n");
+            printf("Car park : %s\n", name);
+            printf("Location : %s\n", location);
+            printf("Slot     : %d\n", slots[i].number);
+            printf("Plate    : %s\n", plate);
+            printf("People   : %d\n", people);
+            printf("============================\n");
 
-                saveSlots(filename,
-                          slots,
-                          count);
-
-                printf("\n");
-                printf("============================\n");
-                printf(" Parking Reserved!\n");
-                printf("============================\n");
-                printf("Car park : %s\n", location);
-                printf("Slot     : %d\n", slots[i].number);
-                printf("Plate    : %s\n", plate);
-                printf("People   : %d\n", people);
-                printf("============================\n");
-
-                found = 1;
-                break;
-            }
+            found = 1;
+            break;
         }
 
-        if (found)
-            break;
+        if (found) break;
     }
 
     fclose(parkFile);
 
     if (!found) {
-
-        printf("\nSorry, all parking slots are full.\n");
+        printf("\nSorry, no usable parking slot is free right now.\n");
     }
 }
 
@@ -120,57 +99,46 @@ void exitParking() {
     printf("\n===== Exit Parking =====\n");
 
     printf("License plate: ");
-    scanf("%49s", plate);
+    if (scanf("%49s", plate) != 1) return;
+    flushInput();
 
-    FILE *parkFile = fopen("Park.txt", "r");
+    FILE *parkFile = fopen(PARK_FILE, "r");
 
     if (parkFile == NULL) {
-
-        printf("Park.txt not found.\n");
+        printf("%s not found.\n", PARK_FILE);
         return;
     }
 
-    char filename[150];
-    char location[100];
-    int capacity;
+    char name[MAX_NAME];
+    char location[MAX_LOCATION];
+    int  capacity;
 
     int found = 0;
 
-    while (fscanf(parkFile,
-                  "%s %s %d",
-                  filename,
-                  location,
-                  &capacity) == 3) {
+    while (fscanf(parkFile, "%99s %99s %d",
+                  name, location, &capacity) == 3) {
 
         Slot slots[MAX_SLOTS];
 
-        int count =
-            loadSlots(filename,
-                      slots,
-                      MAX_SLOTS);
+        int count = loadSlots(name, slots, MAX_SLOTS);
 
         for (int i = 0; i < count; i++) {
 
-            if (slots[i].occupied &&
+            if (slots[i].status == OCCUPIED &&
                 strcmp(slots[i].plate, plate) == 0) {
 
                 printf("\n");
-                printf("Car park : %s\n", location);
+                printf("Car park : %s\n", name);
+                printf("Location : %s\n", location);
                 printf("Slot     : %d\n", slots[i].number);
                 printf("Plate    : %s\n", slots[i].plate);
                 printf("People   : %d\n", slots[i].people);
 
-                /*
-                   Reset slot
-                */
-
-                slots[i].occupied = 0;
+                slots[i].status   = AVAILABLE;
                 slots[i].plate[0] = '\0';
-                slots[i].people = 0;
+                slots[i].people   = 0;
 
-                saveSlots(filename,
-                          slots,
-                          count);
+                saveSlots(name, slots, count);
 
                 printf("\nParking slot released successfully.\n");
 
@@ -179,16 +147,12 @@ void exitParking() {
             }
         }
 
-        if (found)
-            break;
+        if (found) break;
     }
 
     fclose(parkFile);
 
     if (!found) {
-
         printf("License plate not found.\n");
     }
 }
-
-#endif
