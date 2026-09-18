@@ -67,7 +67,6 @@ void viewCarparkDetails() {
     if (scanf("%99s", name) != 1) {
         return;
     }
-    flushInput();
 
     if (!findCarpark(name, location, &capacity)) {
         printf("Car park not found.\n");
@@ -122,7 +121,6 @@ void forceEditSlot() {
     if (scanf("%99s", name) != 1) {
         return;
     }
-    flushInput();
 
     Slot slots[MAX_SLOTS];
     int count = loadSlots(name, slots, MAX_SLOTS);
@@ -166,7 +164,6 @@ void forceEditSlot() {
         if (scanf("%49s", plate) != 1) {
             return;
         }
-        flushInput();
 
         printf("Number of people: ");
         if (!readInt(&people) || people <= 0) {
@@ -200,7 +197,6 @@ void setCarparkAvailable() {
     if (scanf("%99s", name) != 1) {
         return;
     }
-    flushInput();
 
     Slot slots[MAX_SLOTS];
     int count = loadSlots(name, slots, MAX_SLOTS);
@@ -229,7 +225,6 @@ void repairCarpark() {
     if (scanf("%99s", name) != 1) {
         return;
     }
-    flushInput();
 
     Slot slots[MAX_SLOTS];
     int count = loadSlots(name, slots, MAX_SLOTS);
@@ -356,13 +351,11 @@ void adminMenu() {
                 if (scanf("%99s", name) != 1) {
                     break;
                 }
-                flushInput();
 
                 printf("Location: ");
                 if (scanf("%99s", location) != 1) {
                     break;
                 }
-                flushInput();
 
                 printf("Capacity: ");
                 if (!readInt(&capacity)) {
@@ -387,7 +380,6 @@ void adminMenu() {
                 if (scanf("%99s", name) != 1) {
                     break;
                 }
-                flushInput();
 
                 if (!findCarpark(name, oldLocation, &oldCapacity)) {
                     printf("Car park \"%s\" not found.\n", name);
@@ -401,13 +393,11 @@ void adminMenu() {
                 if (scanf("%99s", newname) != 1) {
                     break;
                 }
-                flushInput();
 
                 printf("New location: ");
                 if (scanf("%99s", newlocation) != 1) {
                     break;
                 }
-                flushInput();
 
                 printf("New capacity: ");
                 if (!readInt(&newcapacity)) {
@@ -426,7 +416,6 @@ void adminMenu() {
                 if (scanf("%99s", name) != 1) {
                     break;
                 }
-                flushInput();
 
                 deleteCarpark(name);
                 break;

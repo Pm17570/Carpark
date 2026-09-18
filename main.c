@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 
-// The headers have no guards, so the order here is important.
 #include "file.h"
 #include "user.h"
 #include "admin.h"
@@ -13,7 +12,8 @@ int main() {
     char input[100];
     int running = 1;
 
-    while (running) {
+    while (running)
+    {
         printf("\n");
         printf("========================================\n");
         printf("           PARKING SYSTEM\n");
@@ -29,7 +29,6 @@ int main() {
             printf("\nClosing program...\n");
             break;
         }
-        flushInput();
 
         if (strcmp(input, "1") == 0) {
             reserveParking();
@@ -43,7 +42,6 @@ int main() {
             if (scanf("%9s", confirm) != 1) {
                 break;
             }
-            flushInput();
 
             if (confirm[0] == 'y' || confirm[0] == 'Y') {
                 printf("Closing program. Goodbye!\n");
@@ -57,7 +55,6 @@ int main() {
             if (scanf("%99s", password) != 1) {
                 break;
             }
-            flushInput();
 
             if (strcmp(password, ADMIN_PASSWORD) == 0) {
                 printf("\nAdmin login successful.\n");

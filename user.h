@@ -85,7 +85,6 @@ void exitParking() {
     if (scanf("%49s", plate) != 1) {
         return;
     }
-    flushInput();
 
     FILE *parkFile = fopen(PARK_FILE, "r");
     if (parkFile == NULL) {

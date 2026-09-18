@@ -9,24 +9,24 @@
 
 #define PARK_FILE "Park.txt"
 
-// These are the 3 things a slot can be.
+//3 possible states of slots
 #define AVAILABLE 0
 #define OCCUPIED 1
 #define REPAIR 2
 
-typedef struct {
+typedef struct slot{
     int number;
     int status;
     char plate[MAX_PLATE];
     int people;
 } Slot;
 
-// Every car park is saved in its own text file called name.txt.
+//Save the car park slots into a file
 void makeFileName(const char *name, char *filename) {
     snprintf(filename, 150, "%s.txt", name);
 }
 
-// This removes the newline and spaces at the end of a string.
+//Remove newline and spaces at the end of a string.
 void trim(char *s) {
     int len = strlen(s);
 
@@ -37,7 +37,7 @@ void trim(char *s) {
     }
 }
 
-// This throws away whatever is left on the line after scanf.
+//Clean the input buffer to avoid problems with scanf.
 void flushInput() {
     int c;
 
@@ -45,14 +45,12 @@ void flushInput() {
     }
 }
 
-// This reads a number. It returns 0 if the user typed something weird.
+//Reads number, otherwise return 0.
 int readInt(int *value) {
     if (scanf("%d", value) != 1) {
-        flushInput();
         return 0;
     }
 
-    flushInput();
     return 1;
 }
 
@@ -66,7 +64,7 @@ const char *statusText(int status) {
     return "AVAILABLE";
 }
 
-// This reads all the slots of one car park into the array.
+//Reads all the slots of one car park into the array.
 int loadSlots(const char *name, Slot slots[], int maxSlots) {
     char filename[150];
     makeFileName(name, filename);
@@ -150,7 +148,7 @@ int saveSlots(const char *name, Slot slots[], int count) {
     return 1;
 }
 
-// The name is the only thing we use to find a car park.
+//Find carpark by using name as primary key.
 int findCarpark(const char *name, char *location, int *capacity) {
     FILE *parkFile = fopen(PARK_FILE, "r");
     if (parkFile == NULL) {
@@ -180,7 +178,7 @@ int findCarpark(const char *name, char *location, int *capacity) {
     return 0;
 }
 
-// One car cannot park in two places, so we check every car park.
+// One car cannot park in two places.
 int plateExists(const char *plate) {
     FILE *parkFile = fopen(PARK_FILE, "r");
     if (parkFile == NULL) {
